@@ -1,4 +1,16 @@
-# ISA 401: Business Intelligence & Data Visualization
+# ISA 401: Business Intelligence \& Data Visualization
+
 Baiden Gallo
 Semester: Fall 2026
-Course Topics: Data Acquisition & Transformation, Data Visualization & Communication, Exploratory Data Mining & Project Synthesis
+
+
+
+\- \*\*Tools this semester:\*\* R, RStudio, Git
+
+
+Course Topics: 
+
+1. Data Acquisition \& Transformation 
+2. Data Visualization \& Communication
+3. Exploratory Data Mining \& Project Synthesis
+
