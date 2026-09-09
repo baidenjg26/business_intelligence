@@ -1,0 +1,87 @@
+---
+title: "Class05"
+author: "Baiden Gallo"
+date: "2026-09-09"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    numbered_sections: true
+    code_download: true
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+knitr::opts_chunk$set(echo= TRUE)
+```
+
+## Game01: subsetting lists
+
+```{r}
+campus = jsonlite::fromJSON(
+  "https://isa401-find-your-seat.vercel.app/campus.json")
+
+names(campus) #shows named elements within a list, vector, cols in a data frame
+
+fsb= campus$Farmer #saving Farmer named list in FSB
+#equivalent: campus[[5]]
+fsb$code
+
+
+#fsb[[8]]$`2`$sections #floors is 8th in named list under fsb, floor 2 is the third under floors named list
+```
+
+
+#Reading Excel File
+
+```{r occupations}
+occupation = readxl::read_excel(
+  path = "../data/occupation.xlsx",
+  sheet = 5, #sheet= "Table 1.4"
+  skip = 1
+  )
+#when you subset in R drops these specific things
+#given that they are three, put them in a vector
+# notice the "'" after parentheses
+#nothing after the comma which means all columns instead of that space -->1.7
+occupation = occupation[-c(32,33,34), ]
+#alternatively
+occupation = occupation[1:31, ]
+```
+
+
+#Reading a JSON file
+
+```{r My friend JSON}
+
+json_url = "https://data.cincinnati-oh.gov/resource/rvmt-pkmq.json?$limit=100"
+
+crashes_json = jsonlite::fromJSON(json_url)
+dplyr::glimpse(crashes_json)
+```
+
+#Game 02
+
+```{r}
+logins = readr::read_csv("https://isa401-import-heist.vercel.app/api/stage1?seat=L3-7&s=B")
+
+events_df =log$events #6 files are downloaded
+
+log = jsonlite::fromJSON("https://isa401-import-heist.vercel.app/api/stage2?key=ACCOUNT&seat=L3-7&s=B")
+
+
+
+jsonlite::fromJSON("https://isa401-import-heist.vercel.app/api/finish?code=NUMBER&seat=L3-7&s=B")
+```
+
+
