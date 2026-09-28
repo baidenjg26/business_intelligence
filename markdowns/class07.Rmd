@@ -5,6 +5,10 @@ date: "`r Sys.Date()`"
 output: 
   html_document:
     toc: TRUE
+    toc_float: true
+    number_sections: true
+    code_download: true
+    code_folding: show
 ---
 
 ```{r setup, include=FALSE}
@@ -57,5 +61,79 @@ jobs |>
     # remind me to show you how to compute remote_share diff in next class
   )
 
+#deviate from answer in slide, by showing category 
+
+jobs|>
+  dplyr::group_by(category, location)|>
+  dplyr:: summarise(
+    postings = dplyr::n(),
+    remote_share = mean(remote) |> round(digits= 2)
+  )|>
+  dplyr::arrange(dplyr::desc(remote_share))
+  na.omit() #to drop location state == NA and any other rows that contain NA
+
+```
+
+#Joins
+```{r}
+states = tibble::tibble(location_state = state.abb,
+                        state_name = state.name,
+                        region = as.character(state.region))
+
+jobs |>
+  dplyr::left_join(states, by = "location_state") |>
+  dplyr::group_by(region) |>
+  dplyr::summarize(postings = dplyr::n(), remote_share = mean(remote)) |>
+  dplyr::arrange(dplyr::desc(postings))
+
+jobs |> dplyr::count(location_state) |> dplyr::anti_join(states, by = "location_state")
+```
+
+#Airbnb
+```{r}
+con = DBI::dbConnect(RSQLite::SQLite(), "../data/midwest_airbnb.db")
+listings = DBI::dbReadTable(con, "listings") |>
+  tibble::as_tibble()
+DBI::dbDisconnect(con)
+dplyr::glimpse(listings)
+
+#1. How many listings per city?
+#If answer based on last class, can group by city and count # of listings in each city
+
+listings |> dplyr::group_by(city) |> dplyr::summarise(count= dplyr::n())
+#shortcut for same code below
+listings |>dplyr::count(city)
+
+#or count # of timed each city occurred in col city
+table(listings$city)  #returns a named vector instead of data.frame/tibble
+
+#2. For entire homes (room_type == "Entire home/apt") that sleep four or more, what is the median price in each city?
+
+listings |>
+  dplyr::filter(
+    room_type == "Entire home/apt" & accommodates >=4
+     )|>
+  dplyr::group_by(city)|>
+dplyr::summarise(
+median_price= median(price)
+)
+
+#3. Add price_per_person = price / accommodates. Which three listings are cheapest per person? Believe them?
+
+listings|>
+  dplyr::mutate(price_per_person = price/ accommodates)|>
+  dplyr:: select(vity, host_name, price, accommodates, price_per_person)|>
+  dplyr::arrange(price_per_person)
+  tail(3) #shows last 3 rows
+
+
+#4. Which five host_names have the most listings?
+
+  #host_names are not unique but host_id's are
+listings |> 
+  dplyr::count(host_name, sort = T)
+#the line below groups by host name and host id to find unique hosts, but either is fine on exam
+listings |> 
+  dplyr::count(host_name, host_id, sort = T)
 ```
 
