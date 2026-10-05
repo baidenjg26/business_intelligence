@@ -1,0 +1,84 @@
+---
+title: "Class12"
+author: "Baiden Gallo"
+date: "2026-10-05"
+output: 
+html_document:
+  toc: TRUE
+    toc_float: true
+    number_sections: true
+    code_download: true
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+year = 2025
+
+crash_url = paste0('https://www.planecrashinfo.com/', year, '/', year, '.htm')
+
+crash_page <- rvest::read_html(crash_url, encoding = "ISO-8859-1")
+
+# This should now print without the error
+crash_page
+
+# How many <table> elements are on the page?
+crash_tables <- crash_page |>
+  rvest::html_elements("table") |>
+  rvest::html_table()
+
+#From a cleaning perspective
+#[1] translate into DF instead of list
+#[2] replace headers with row 1, then delete row 1
+#[3] change date from chr to date
+#[4] complex cleaning to split info within cell into separate columns
+
+crash_df = crash_tables[[1]] #subset a list
+
+colnames(crash_df) = crash_df[1, ]
+crash_df = crash_df[-1, ]
+
+#convert date column into date type
+crash_df= crash_df |>
+  dplyr::mutate(Date= lubridate::dmy(Date))
+
+dplyr::glimpse(crash_df)
+```
+
+#in class practice game
+```{r}
+#Q1
+page = rvest::read_html("https://isa401-salvage.vercel.app/registry?start=1")
+classes = page |>
+  rvest::html_elements("Dreadnoughts") |>
+  rvest::html_text2()
+length(classes)   # check this first: one per card
+
+#Q3
+base = "https://isa401-salvage.vercel.app"
+starts = seq(from = 1, to = 351, by = 50)
+pages = vector("list", length(starts)) #initialize list, similar for df
+for (i in seq_along(starts)) {
+  pg = rvest::read_html(paste0(base, "/registry?start=", starts[i]))
+  pages[[i]] = data.frame(
+    class = pg |> rvest::html_elements("div > ul > li:nth-child(1) > span") |> 
+      rvest::html_text2(),
+    value = pg |> rvest::html_elements("div > ul > li:nth-child(3) > span") |> 
+      rvest::html_text2() |> readr::parse_number()
+  )
+  Sys.sleep(1)   # robots.txt asks for it
+}
+registry = dplyr::bind_rows(pages)   # 400 rows?
+
+dreadnought_df = registry |>
+dplyr::filter(class== "Dreadnought")
+
+sum(dreadnought_df$value)
+```
+
+
+

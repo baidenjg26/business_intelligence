@@ -1,0 +1,89 @@
+---
+title: "class10"
+author: "Baiden Gallo"
+date: "2026-09-28"
+output: 
+html_document:
+  toc: TRUE
+    toc_float: true
+    number_sections: true
+    code_download: true
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## `robots.txt` example MU bulletin
+
+we used robots.txt package in chunk below to check if we can scrape page <https://bulletin.miamioh.edu/courses-instructions/isa/>
+
+```{r}
+robotstxt::paths_allowed(
+  paths= "courses-instructions/isa/",
+  domain= "https://bulletin.miamioh.edu/",
+  bot= "*"
+)
+```
+
+The `TRUE` above means that we are allowed to scrape it.
+
+##Example 1: Miami Football wiki
+```{r}
+robotstxt::paths_allowed(
+  paths= "/wiki/Miami_RedHawks_football",
+  domain= "en.wikipedia.org",
+  bot= "*"
+)
+```
+
+##Example 2: Indeed
+```{r}
+robotstxt::paths_allowed(
+  paths= "/viewjob",
+  domain= "www.indeed.com",
+  bot= "*"
+)
+```
+#Robotstxt can be inconsistent. Sometimes try dropping the trailing slash from the url to get rid of error message. 
+
+
+```{r}
+url = "https://en.wikipedia.org/wiki/Miami_RedHawks_football"
+robotstxt::paths_allowed(paths = "/wiki/Miami_RedHawks_football",
+                         domain = "en.wikipedia.org", bot = "*")
+page = rvest::read_html(url)
+items = page |> rvest::html_elements("table.wikitable")
+```
+
+#scrape bulletin for ISA
+```{r bulletin}
+#Check if we can scrape this info, found to be true above
+
+
+#Load backend of html into R using
+#[a] rvest::read_html() somestimes rvest::read_html_live() if dynamic content
+#[b] in some cases, craft as request httr2::request() >..... > httr2::resp_body_html()
+
+isa_courses_in_r = rvest::read_html("https://bulletin.miamioh.edu/courses-instruction/isa/")
+
+#we will extract course title =s, which can dbe done in 1 pipeline
+#given they look same on rendered webpage
+#(bolded, font size/type)
+
+
+#CSS selector obtained: highlight what we want to pull (ISA 401 course title) right click, inspect, copy selector
+#able to get just title for ISA 401 because we had div:nth-child(24), if you drop get, you get all course titles
+isa_courses_in_r |>
+  rvest:: html_elements("#sc_sccoursedescs > div:nth-child(24) > p.courseblocktitle > strong")|>
+rvest::html_text() ->isa_titles
+
+#Course descriptions using selector gadget
+isa_courses_in_r |>
+  rvest:: html_elements(".courseblockdesc")|>
+rvest::html_text() ->isa_desc
+df= data.frame(title= isa_titles, description = isa_desc)
+```
+
